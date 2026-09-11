@@ -1,0 +1,82 @@
+body {
+  display: flex;
+  background-color: #0b1220;
+  color: #e0e0e0;
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+}
+
+.sidebar {
+  width: 220px;
+  background-color: #111a2b;
+  padding: 20px;
+}
+
+.sidebar h2 { color: #4a90e2; }
+.sidebar ul { list-style: none; padding: 0; }
+.sidebar li { margin: 10px 0; cursor: pointer; }
+
+.controls button {
+  display: block;
+  width: 100%;
+  margin: 8px 0;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-weight: bold;
+}
+
+.green { background-color: #27ae60; }
+.yellow { background-color: #f1c40f; }
+.red { background-color: #e74c3c; }
+
+.dashboard {
+  flex: 1;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 20px;
+}
+
+header {
+  grid-column: span 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.band-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+
+.band {
+  background-color: #1f2a3d;
+  border-radius: 6px;
+  padding: 10px;
+  text-align: center;
+}
+
+.band.active { background-color: #27ae60; }
+.band.threat { background-color: #e74c3c; }
+.band.scanning { background-color: #3498db; }
+.band.missed { background-color: #f39c12; }
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  border-bottom: 1px solid #333;
+  padding: 8px;
+  text-align: center;
+}

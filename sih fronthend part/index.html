@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Scan Strategy Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <h2>Dashboard</h2>
+    <ul>
+      <li>Spectrum</li>
+      <li>Receiver</li>
+      <li>ML Scheduler</li>
+      <li>Metrics</li>
+      <li>Comparison</li>
+      <li>History</li>
+      <li>Settings</li>
+      <li>About</li>
+    </ul>
+    <div class="controls">
+      <button id="startBtn" class="green">START</button>
+      <button id="pauseBtn" class="yellow">PAUSE</button>
+      <button id="resetBtn" class="red">RESET</button>
+    </div>
+  </aside>
+
+  <main class="dashboard">
+    <header>
+      <h1>SMART SCAN STRATEGY<br><span>for Electronic Warfare</span></h1>
+      <div class="status">
+        <div class="system">SYSTEM ACTIVE</div>
+        <div class="time">Simulation Time: <span id="simTime">00:00:00</span></div>
+        <div class="mode">Current Mode: ML Smart Scan</div>
+      </div>
+    </header>
+
+    <section class="spectrum">
+      <h2>Live Frequency Spectrum</h2>
+      <div id="bands" class="band-grid"></div>
+    </section>
+
+    <section class="receiver">
+      <h2>Current Receiver Status</h2>
+      <p id="receiverInfo">Band: -- | Frequency: -- | Status: Idle</p>
+    </section>
+
+    <section class="history">
+      <h2>Recent Detection History</h2>
+      <table>
+        <thead><tr><th>Time</th><th>Band</th><th>Frequency</th><th>Result</th></tr></thead>
+        <tbody id="historyTable"></tbody>
+      </table>
+    </section>
+
+    <section class="scheduler">
+      <h2>ML Scheduler Decision</h2>
+      <canvas id="probChart"></canvas>
+      <p id="schedulerInfo"></p>
+    </section>
+
+    <section class="metrics">
+      <h2>Performance Metrics</h2>
+      <div class="metric-grid">
+        <div id="detectRate">Detection Rate: --%</div>
+        <div id="falseRate">False Alarm Rate: --%</div>
+        <div id="interceptRate">Interception Rate: --%</div>
+        <div id="avgTime">Average Intercept Time: -- sec</div>
+        <div id="accuracy">Prediction Accuracy: --%</div>
+        <div id="totalIntercepts">Total Intercepts: --</div>
+      </div>
+    </section>
+
+    <section class="comparison">
+      <h2>Baseline vs Smart Scan Comparison</h2>
+      <canvas id="compareChart"></canvas>
+    </section>
+
+    <section class="charts">
+      <h2>Interception Rate Over Time</h2>
+      <canvas id="rateChart"></canvas>
+      <h2>Spectrum Activity Heatmap</h2>
+      <canvas id="heatmapChart"></canvas>
+      <h2>Band Selection Frequency</h2>
+      <canvas id="bandChart"></canvas>
+    </section>
+  </main>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>
