@@ -1,0 +1,59 @@
+"""
+Main FastAPI application for the Smart Scan Strategy project.
+"""
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from .routes import router
+
+
+# ============================================================
+# CREATE FASTAPI APPLICATION
+# ============================================================
+
+app = FastAPI(
+    title="Smart Scan Strategy API",
+    description=(
+        "Backend API for the software-only simulated "
+        "Electronic Warfare smart scan strategy."
+    ),
+    version="1.0.0",
+)
+
+
+# ============================================================
+# CORS
+# ============================================================
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# ============================================================
+# REGISTER ROUTES
+# ============================================================
+
+app.include_router(router)
+
+
+# ============================================================
+# ROOT ENDPOINT
+# ============================================================
+
+@app.get("/")
+def root():
+    """
+    Basic information about the API.
+    """
+
+    return {
+        "name": "Smart Scan Strategy API",
+        "status": "running",
+        "docs": "/docs",
+    }
