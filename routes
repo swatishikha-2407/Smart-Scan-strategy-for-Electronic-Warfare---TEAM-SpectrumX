@@ -1,0 +1,346 @@
+"""
+API routes for the Smart Scan Strategy backend.
+"""
+
+from typing import Dict
+
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+
+from .simulation_manager import SimulationManager
+
+
+# ============================================================
+# ROUTER
+# ============================================================
+
+router = APIRouter()
+
+
+# ============================================================
+# GLOBAL SIMULATION MANAGER
+# ============================================================
+
+simulation_manager = SimulationManager()
+
+
+# ============================================================
+# REQUEST MODELS
+# ============================================================
+
+class StartSimulationRequest(BaseModel):
+    """
+    Request body for starting a simulation.
+    """
+
+    scenario: str
+    scheduler: str
+
+
+# ============================================================
+# VALID OPTIONS
+# ============================================================
+
+VALID_SCENARIOS = {
+    "periodic",
+    "random",
+    "frequency_agile",
+    "mixed",
+    "unknown_activity",
+}
+
+VALID_SCHEDULERS = {
+    "smart",
+}
+
+
+# ============================================================
+# HEALTH
+# ============================================================
+
+@router.get("/health")
+def health() -> Dict[str, str]:
+    """
+    Check whether the backend is running.
+    """
+
+    return {
+        "status": "ok"
+    }
+
+
+# ============================================================
+# START
+# ============================================================
+
+@router.post("/simulation/start")
+def start_simulation(
+    request: StartSimulationRequest
+):
+    """
+    Start the simulation.
+
+    Example request:
+
+    {
+        "scenario": "mixed",
+        "scheduler": "smart"
+    }
+    """
+
+    # Validate scenario
+    if request.scenario not in VALID_SCENARIOS:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "invalid scenario",
+                "message": (
+                    f"Invalid scenario '{request.scenario}'. "
+                    f"Valid scenarios are: "
+                    f"{sorted(VALID_SCENARIOS)}"
+                ),
+            },
+        )
+
+    # Validate scheduler
+    if request.scheduler not in VALID_SCHEDULERS:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "invalid scheduler",
+                "message": (
+                    f"Invalid scheduler '{request.scheduler}'. "
+                    f"Valid schedulers are: "
+                    f"{sorted(VALID_SCHEDULERS)}"
+                ),
+            },
+        )
+
+    try:
+        return simulation_manager.start()
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "simulation start failed",
+                "message": str(exc),
+            },
+        )
+
+
+# ============================================================
+# STOP
+# ============================================================
+
+@router.post("/simulation/stop")
+def stop_simulation():
+    """
+    Stop the simulation.
+    """
+
+    try:
+        return simulation_manager.stop()
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "simulation stop failed",
+                "message": str(exc),
+            },
+        )
+
+
+# ============================================================
+# RESET
+# ============================================================
+
+@router.post("/simulation/reset")
+def reset_simulation():
+    """
+    Reset the simulation.
+    """
+
+    try:
+        return simulation_manager.reset()
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "simulation reset failed",
+                "message": str(exc),
+            },
+        )
+
+
+# ============================================================
+# STEP
+# ============================================================
+
+@router.post("/simulation/step")
+def simulation_step():
+    """
+    Perform one simulation cycle.
+    """
+
+    if not simulation_manager.running:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "simulation not started",
+                "message": (
+                    "Start the simulation before calling /simulation/step."
+                ),
+            },
+        )
+
+    try:
+        return simulation_manager.step()
+
+    except RuntimeError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "simulation error",
+                "message": str(exc),
+            },
+        )
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "simulation step failed",
+                "message": str(exc),
+            },
+        )
+
+
+# ============================================================
+# SPECTRUM
+# ============================================================
+
+@router.get("/simulation/spectrum")
+def get_spectrum():
+    """
+    Return the current state of all simulated frequency bands.
+
+    This endpoint is intended for dashboard visualization.
+    """
+
+    current_time = simulation_manager.current_time
+
+    # Obtain environment information if available.
+    environment = simulation_manager.environment
+
+    bands = []
+
+    if environment is not None:
+
+        environment_bands = getattr(
+            environment,
+            "bands",
+            None
+        )
+
+        if environment_bands is not None:
+
+            for band in environment_bands:
+
+                if isinstance(band, dict):
+
+                    band_number = band.get(
+                        "band",
+                        band.get("id", 0)
+                    )
+
+                    state = band.get(
+                        "state",
+                        "inactive"
+                    )
+
+                else:
+
+                    band_number = getattr(
+                        band,
+                        "band",
+                        getattr(band, "id", 0)
+                    )
+
+                    state = getattr(
+                        band,
+                        "state",
+                        "inactive"
+                    )
+
+                bands.append({
+                    "band": band_number,
+                    "state": state,
+                })
+
+    # If Member 1 has not yet supplied band information,
+    # return an empty list rather than inventing data.
+    return {
+        "time": current_time,
+        "bands": bands,
+    }
+
+
+# ============================================================
+# HISTORY
+# ============================================================
+
+@router.get("/simulation/history")
+def get_history():
+    """
+    Return scan history.
+    """
+
+    return simulation_manager.get_history()
+
+
+# ============================================================
+# METRICS
+# ============================================================
+
+@router.get("/metrics")
+def get_metrics():
+    """
+    Return actual calculated simulation metrics.
+    """
+
+    return simulation_manager.get_metrics()
+
+
+# ============================================================
+# SCHEDULER INFORMATION
+# ============================================================
+
+@router.get("/scheduler")
+def get_scheduler():
+    """
+    Return scheduler information including selected band and scores.
+    """
+
+    return simulation_manager.get_scheduler_info()
+
+
+# ============================================================
+# SCENARIOS
+# ============================================================
+
+@router.get("/scenarios")
+def get_scenarios():
+    """
+    Return the supported simulation scenarios.
+    """
+
+    return [
+        "periodic",
+        "random",
+        "frequency_agile",
+        "mixed",
+        "unknown_activity",
+    ]
